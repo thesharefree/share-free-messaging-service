@@ -6,6 +6,7 @@ name: Build & Deploy to ACI
 env:
   LOCATION: centralindia
   RESOURCE_GROUP: ShareFreeAlphaARG
+  KEY_VAULT: ShareFreeAlphaAKV
   AZURE_WEBAPP_NAME: share-free-messaging-service
   AZURE_WEBAPP_PACKAGE_PATH: '.'
   NODE_VERSION: '14.x'
