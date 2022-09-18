@@ -36,6 +36,7 @@ jobs:
         - name: 'Update .env'
           run: |
             touch .env
+            echo 'PORT=3000' >> .env
             echo 'MONGO_DB_URL='${{ env.MONGO_DB_URL }} >> .env
         
         - name: Create service-account.json
