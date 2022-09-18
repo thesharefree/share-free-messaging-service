@@ -1,4 +1,4 @@
-# A Chat Service in NestJs
+# ShareFree messaging service
 
 This NestJs project is a websocket application used by [Chat App](https://github.com/sharmavikashkr/chat_app_flutter).
 
