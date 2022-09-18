@@ -1,0 +1,63 @@
+on:
+  push:
+    branches:
+      - master
+name: Build & Deploy to ACI
+env:
+  LOCATION: centralindia
+  RESOURCE_GROUP: ShareFreeAlphaARG
+  AZURE_WEBAPP_NAME: share-free-messaging-service
+  AZURE_WEBAPP_PACKAGE_PATH: '.'
+  NODE_VERSION: '14.x'
+jobs:
+    build-and-deploy:
+        runs-on: ubuntu-latest
+        steps:
+
+        - name: 'Checkout GitHub Action'
+          uses: actions/checkout@master
+          
+        - name: 'Login to Azure'
+          uses: azure/login@v1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+        - name: 'Set default location'
+          run: |
+            az configure --defaults location=${{ env.LOCATION }}
+            az configure --defaults group=${{ env.RESOURCE_GROUP }}
+
+        - name: 'Get env Secrets'
+          run: |
+            MONGO_DB_URL=$(az keyvault secret show --name "MONGO-DB-URL" --vault-name ${{ env.KEY_VAULT }} --query "value")
+            echo 'MONGO_DB_URL='$MONGO_DB_URL >> $GITHUB_ENV
+        
+        - name: 'Update .env'
+          run: |
+            touch .env
+            echo 'MONGO_DB_URL='${{ env.MONGO_DB_URL }} >> .env
+        
+        - name: Create service-account.json
+          run: |
+            touch src/auth/service-account.json
+            echo ${{ secrets.FIREBASE_SERVICE_ACCOUNT }} >> src/auth/service-account.json
+
+        - name: Use Node.js ${{ env.NODE_VERSION }}
+          uses: actions/setup-node@v3
+          with:
+            node-version: ${{ env.NODE_VERSION }}
+
+        - name: npm install, build, and test
+          run: |
+            npm install
+            npm run build
+            npm run test
+
+        - uses: azure/webapps-deploy@v2
+          with:
+            app-name: ${{ env.AZURE_WEBAPP_NAME }}
+            package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+        - name: logout
+          run: |
+            az logout

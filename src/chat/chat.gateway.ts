@@ -1,29 +1,38 @@
 import {
   ConnectedSocket,
   MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
-import { NestGateway } from '@nestjs/websockets/interfaces/nest-gateway.interface';
 import { ChatService } from './chat.service';
-import { Bind, UseInterceptors } from '@nestjs/common';
-import { Chat } from './chat.entity';
+import { Bind } from '@nestjs/common';
+import { Message, RecipientType } from '../entities/message.entity';
+import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway()
-export class ChatGateway implements NestGateway {
+@WebSocketGateway({
+  namespace: 'chat',
+  cors: {
+    origin: '*',
+  },
+})
+export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   constructor(private chatService: ChatService) { }
 
+  @WebSocketServer()
+  server: Server;
+
   afterInit(server: any) {
-    // console.log('Init', server);
+    console.log('Init', server);
   }
 
   handleConnection(socket: any) {
     const query = socket.handshake.query;
     console.log('Connect', query);
     this.chatService.userConnected(query.userName, query.registrationToken);
-    process.nextTick(async () => {
-      socket.emit('allChats', await this.chatService.getChats());
-    });
   }
 
   handleDisconnect(socket: any) {
@@ -34,11 +43,11 @@ export class ChatGateway implements NestGateway {
 
   @Bind(MessageBody(), ConnectedSocket())
   @SubscribeMessage('chat')
-  async handleNewMessage(chat: Chat, sender: any) {
-    console.log('New Chat', chat);
-    await this.chatService.saveChat(chat);
-    sender.emit('newChat', chat);
-    sender.broadcast.emit('newChat', chat);
-    await this.chatService.sendMessagesToOfflineUsers(chat);
+  async handleNewMessage(@MessageBody() message: Message, @ConnectedSocket() client: Socket) {
+    console.log('New message', message);
+    await this.chatService.saveMessage(message);
+    client.emit(`${message.recipientType}-${message.recipientId}`, message);
+    client.broadcast.emit(`${message.recipientType}-${message.recipientId}`, message);
+    await this.chatService.sendMessageToOfflineUsers(message);
   }
 }

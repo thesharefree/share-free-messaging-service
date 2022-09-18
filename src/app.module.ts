@@ -1,21 +1,13 @@
 import { Module } from '@nestjs/common';
-import { TypegooseModule } from 'nestjs-typegoose';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ConfigModule } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
 import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
-    TypegooseModule.forRoot(
-      'mongodb+srv://user:password@cmongoDbHost/database?retryWrites=true&w=majority',
-      {
-        useNewUrlParser: true,
-        useFindAndModify: false,
-      },
-    ),
+    ConfigModule.forRoot({ isGlobal: true }),
+    MongooseModule.forRoot(process.env.MONGO_DB_URL),
     ChatModule,
-  ],
-  controllers: [AppController],
-  providers: [AppService],
+  ]
 })
-export class AppModule { }
+export class AppModule {}

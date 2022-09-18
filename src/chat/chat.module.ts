@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { TypegooseModule } from 'nestjs-typegoose';
-import { Chat } from './chat.entity';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Message, MessageSchema } from '../entities/message.entity';
 import { ChatGateway } from './chat.gateway';
 import { ChatService } from './chat.service';
 
 @Module({
-  imports: [TypegooseModule.forFeature([Chat])],
+  imports: [MongooseModule.forFeature([{ name: Message.name, schema: MessageSchema }])],
   providers: [ChatGateway, ChatService]
 })
 export class ChatModule { }
