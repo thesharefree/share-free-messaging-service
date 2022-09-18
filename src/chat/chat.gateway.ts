@@ -10,7 +10,7 @@ import {
 } from '@nestjs/websockets';
 import { ChatService } from './chat.service';
 import { Bind } from '@nestjs/common';
-import { Message, RecipientType } from '../entities/message.entity';
+import { Message } from '../entities/message.entity';
 import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({
