@@ -14,7 +14,6 @@ import { Message } from '../entities/message.entity';
 import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({
-  namespace: 'chat',
   cors: {
     origin: '*',
   },

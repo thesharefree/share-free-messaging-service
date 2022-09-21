@@ -6,6 +6,6 @@ export class AppController {
 
   @Get('/')
   getHello(): string {
-    return 'Share Free Messaging Service';
+    return 'Share Free Messaging';
   }
 }
