@@ -7,9 +7,8 @@ env:
   LOCATION: centralindia
   RESOURCE_GROUP: ShareFreeAlphaARG
   KEY_VAULT: ShareFreeAlphaAKV
-  AZURE_WEBAPP_NAME: sharefreemsgalpha
-  AZURE_WEBAPP_PACKAGE_PATH: '.'
-  NODE_VERSION: '16.x'
+  CONTAINER_REGISTERY: sharefreealphaacr
+  APP_NAME: sharefreemsgalpha
 jobs:
     build-and-deploy:
         runs-on: ubuntu-latest
@@ -42,22 +41,22 @@ jobs:
           run: |
             touch src/auth/service-account.json
             printf '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' >> src/auth/service-account.json
-
-        - name: Use Node.js ${{ env.NODE_VERSION }}
-          uses: actions/setup-node@v3
+        
+        - name: 'Build & Push'
+          uses: azure/docker-login@v1
           with:
-            node-version: ${{ env.NODE_VERSION }}
-
-        - name: npm install, build, and test
-          run: |
-            npm install
-            npm run build
-            npm run test
+            login-server: ${{ env.CONTAINER_REGISTERY }}.azurecr.io
+            username: ${{ secrets.AZURE_USERNAME }}
+            password: ${{ secrets.AZURE_PASSWORD }}
+        - run: |
+            docker build . -t ${{ env.APP_NAME }}:1.0.${{ github.run_number }}
+            docker tag ${{ env.APP_NAME }}:1.0.${{ github.run_number }} ${{ env.CONTAINER_REGISTERY }}.azurecr.io/builds/${{ env.APP_NAME }}:1.0.${{ github.run_number }}
+            docker push ${{ env.CONTAINER_REGISTERY }}.azurecr.io/builds/${{ env.APP_NAME }}:1.0.${{ github.run_number }}
 
         - uses: azure/webapps-deploy@v2
           with:
-            app-name: ${{ env.AZURE_WEBAPP_NAME }}
-            package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+            app-name: ${{ env.APP_NAME }}
+            images: '${{ env.CONTAINER_REGISTERY }}.azurecr.io/builds/${{ env.APP_NAME }}:1.0.${{ github.run_number }}'
 
         - name: logout
           run: |
