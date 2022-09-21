@@ -8,7 +8,7 @@ env:
   RESOURCE_GROUP: ShareFreeAlphaARG
   KEY_VAULT: ShareFreeAlphaAKV
   CONTAINER_REGISTERY: sharefreealphaacr
-  APP_NAME: sharefreemsgalpha
+  APP_NAME: share-free-messaging
 jobs:
     build-and-deploy:
         runs-on: ubuntu-latest
