@@ -6,10 +6,13 @@ import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['.env', '.env.local'],
+    }),
     MongooseModule.forRoot(process.env.MONGO_DB_URL),
     ChatModule,
   ],
-  controllers: [AppController]
+  controllers: [AppController],
 })
 export class AppModule {}
