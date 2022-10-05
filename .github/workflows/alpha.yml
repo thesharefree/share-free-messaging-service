@@ -15,25 +15,25 @@ jobs:
         runs-on: ubuntu-latest
         steps:
 
-        - name: 'Checkout GitHub Action'
+        - name: Checkout GitHub Action
           uses: actions/checkout@master
           
-        - name: 'Login to Azure'
+        - name: Login to Azure
           uses: azure/login@v1
           with:
             creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-        - name: 'Set default location'
+        - name: Set default location
           run: |
             az configure --defaults location=${{ env.LOCATION }}
             az configure --defaults group=${{ env.RESOURCE_GROUP }}
 
-        - name: 'Get env Secrets'
+        - name: Get env Secrets
           run: |
             MONGO_DB_URL=$(az keyvault secret show --name "MONGO-DB-URL" --vault-name ${{ env.KEY_VAULT }} --query "value")
             echo 'MONGO_DB_URL='$MONGO_DB_URL >> $GITHUB_ENV
         
-        - name: 'Update .env'
+        - name: Update .env
           run: |
             touch .env
             echo 'MONGO_DB_URL='${{ env.MONGO_DB_URL }} >> .env
@@ -43,7 +43,7 @@ jobs:
             touch src/auth/service-account.json
             printf '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' >> src/auth/service-account.json
         
-        - name: 'Build & Push'
+        - name: Build & Push
           uses: azure/docker-login@v1
           with:
             login-server: ${{ env.CONTAINER_REGISTERY }}.azurecr.io

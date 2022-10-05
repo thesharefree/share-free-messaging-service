@@ -1,7 +1,7 @@
-FROM node:16 AS builder
+FROM node:16-slim AS builder
 WORKDIR /app
 COPY ./package.json ./
-RUN npm install
+RUN npm install --force
 COPY . .
 RUN npm run build
 
