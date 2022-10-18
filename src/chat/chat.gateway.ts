@@ -18,8 +18,10 @@ import { Server, Socket } from 'socket.io';
     origin: '*',
   },
 })
-export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-  constructor(private chatService: ChatService) { }
+export class ChatGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
+  constructor(private chatService: ChatService) {}
 
   @WebSocketServer()
   server: Server;
@@ -42,11 +44,17 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @Bind(MessageBody(), ConnectedSocket())
   @SubscribeMessage('chat')
-  async handleNewMessage(@MessageBody() message: Message, @ConnectedSocket() client: Socket) {
+  async handleNewMessage(
+    @MessageBody() message: Message,
+    @ConnectedSocket() client: Socket,
+  ) {
     console.log('New message', message);
     await this.chatService.saveMessage(message);
     client.emit(`${message.recipientType}-${message.recipientId}`, message);
-    client.broadcast.emit(`${message.recipientType}-${message.recipientId}`, message);
+    client.broadcast.emit(
+      `${message.recipientType}-${message.recipientId}`,
+      message,
+    );
     await this.chatService.sendMessageToOfflineUsers(message);
   }
 }

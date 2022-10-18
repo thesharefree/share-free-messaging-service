@@ -4,8 +4,15 @@ import { Model } from 'mongoose';
 import { defaultApp } from '../auth/firebaseAdmin';
 import { User, UserDocument } from 'src/entities/user.entity';
 import { Group, GroupDocument } from 'src/entities/group.entity';
-import { Message, MessageDocument, RecipientType } from 'src/entities/message.entity';
-import { UserGroupXref, UserGroupXrefDocument } from 'src/entities/user-group-xref.entity';
+import {
+  Message,
+  MessageDocument,
+  RecipientType,
+} from 'src/entities/message.entity';
+import {
+  UserGroupXref,
+  UserGroupXrefDocument,
+} from 'src/entities/user-group-xref.entity';
 import { messaging } from 'firebase-admin';
 
 @Injectable()
@@ -13,8 +20,10 @@ export class ChatService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     @InjectModel(Group.name) private readonly groupModel: Model<GroupDocument>,
-    @InjectModel(UserGroupXref.name) private readonly userGroupXrefModel: Model<UserGroupXrefDocument>,
-    @InjectModel(Message.name) private readonly messageModel: Model<MessageDocument>,
+    @InjectModel(UserGroupXref.name)
+    private readonly userGroupXrefModel: Model<UserGroupXrefDocument>,
+    @InjectModel(Message.name)
+    private readonly messageModel: Model<MessageDocument>,
   ) {}
 
   private allUsers = [];
@@ -36,22 +45,28 @@ export class ChatService {
 
   async userConnected(userEmail: string, registrationToken: string) {
     const user = await this.userModel.findOne({ email: userEmail });
-    await this.userModel.updateOne({ _id: user._id }, {
-      registrationToken: registrationToken,
-      online: true,
-      updatedBy: userEmail,
-      updatedDate: new Date()
-    });
+    await this.userModel.updateOne(
+      { _id: user._id },
+      {
+        registrationToken: registrationToken,
+        online: true,
+        updatedBy: userEmail,
+        updatedDate: new Date(),
+      },
+    );
     console.log('User Online', userEmail);
   }
 
   async userDisconnected(userEmail: string) {
     const user = await this.userModel.findOne({ email: userEmail });
-    await this.userModel.updateOne({ _id: user._id }, {
-      online: false,
-      updatedBy: userEmail,
-      updatedDate: new Date()
-    });
+    await this.userModel.updateOne(
+      { _id: user._id },
+      {
+        online: false,
+        updatedBy: userEmail,
+        updatedDate: new Date(),
+      },
+    );
     console.log('User Offline', userEmail);
   }
 
@@ -59,7 +74,7 @@ export class ChatService {
     const user = await this.userModel.findOne({ email: message.senderEmail });
     var messagePayload: messaging.MulticastMessage = {
       data: {
-        type: "CHAT",
+        type: 'CHAT',
         title: '',
         message: message.message,
         recipientId: message.recipientId,
@@ -68,20 +83,28 @@ export class ChatService {
         senderName: user.name,
         senderEmail: user.email,
         createdBy: user.email,
-        createdDate: message.createdDate.toISOString()
+        createdDate: message.createdDate.toISOString(),
       },
-      tokens: []
+      tokens: [],
     };
     if (RecipientType.GROUP == message.recipientType) {
       const group = await this.groupModel.findById(message.recipientId);
       const owner = await this.userModel.findOne({ email: group.owner });
-      const xrefResp = await this.userGroupXrefModel.find({ groupId: group._id });
-      let userIds = xrefResp.map(xref => { return xref.userId; });
+      const xrefResp = await this.userGroupXrefModel.find({
+        groupId: group._id,
+      });
+      let userIds = xrefResp.map((xref) => {
+        return xref.userId;
+      });
       userIds.push(owner._id.toString());
-      userIds = userIds.filter(userId => userId != user._id.toString());
+      userIds = userIds.filter((userId) => userId != user._id.toString());
       console.log(userIds);
       const users = await this.userModel.where('_id').in(userIds);
-      const userTokens = users.filter(user => user.online === false).map(user => { return user.registrationToken });
+      const userTokens = users
+        .filter((user) => user.online === false)
+        .map((user) => {
+          return user.registrationToken;
+        });
       messagePayload.tokens = userTokens;
       messagePayload.data.title = group.name;
     } else {
