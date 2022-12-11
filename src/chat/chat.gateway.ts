@@ -30,16 +30,16 @@ export class ChatGateway
     console.log('Init', server);
   }
 
-  handleConnection(socket: any) {
+  handleConnection(socket: Socket) {
     const query = socket.handshake.query;
     console.log('Connect', query);
-    this.chatService.userConnected(query.userName, query.registrationToken);
+    this.chatService.userConnected(query.userName.toString(), query.registrationToken.toString());
   }
 
-  handleDisconnect(socket: any) {
+  handleDisconnect(socket: Socket) {
     const query = socket.handshake.query;
     console.log('Disconnect', socket.handshake.query);
-    this.chatService.userDisconnected(query.userName);
+    this.chatService.userDisconnected(query.userName.toString());
   }
 
   @Bind(MessageBody(), ConnectedSocket())
@@ -49,6 +49,8 @@ export class ChatGateway
     @ConnectedSocket() client: Socket,
   ) {
     console.log('New message', message);
+    const query = client.handshake.query;
+    message.senderEmail = query.userName.toString();
     await this.chatService.saveMessage(message);
     client.emit(`${message.recipientType}-${message.recipientId}`, message);
     client.broadcast.emit(
