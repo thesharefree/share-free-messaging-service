@@ -28,10 +28,7 @@ export class Group extends Location {
   scheduleId: string;
 
   @Prop()
-  rtcToken: string;
-
-  @Prop()
-  rtcExpiry: Date;
+  callInProgress: string;
 }
 
 export type GroupDocument = Group & Document;
