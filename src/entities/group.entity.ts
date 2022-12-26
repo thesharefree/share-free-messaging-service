@@ -28,7 +28,7 @@ export class Group extends Location {
   scheduleId: string;
 
   @Prop()
-  callInProgress: string;
+  callInProgress: boolean;
 }
 
 export type GroupDocument = Group & Document;
