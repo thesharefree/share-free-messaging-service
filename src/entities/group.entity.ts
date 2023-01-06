@@ -16,7 +16,7 @@ export class Group extends Location {
   owner: string;
 
   @Prop()
-  organizationId: string;
+  houseId: string;
 
   @Prop()
   description: string;
