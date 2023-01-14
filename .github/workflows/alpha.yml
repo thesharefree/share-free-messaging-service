@@ -36,7 +36,7 @@ jobs:
         - name: Update .env
           run: |
             touch .env
-            echo 'MONGO_DB_URL='${{ secrets.ALPHA_MONGODB_URL }} >> .env
+            echo 'MONGO_DB_URL=${{ secrets.ALPHA_MONGODB_URL }}' >> .env
         
         - name: Create service-account.json
           run: |
