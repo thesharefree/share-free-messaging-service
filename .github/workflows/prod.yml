@@ -6,7 +6,6 @@ name: Build & Deploy to ACI
 env:
   LOCATION: centralindia
   RESOURCE_GROUP: ShareFreeARG
-  KEY_VAULT: ShareFreeAKV
   CONTAINER_REGISTERY: sharefreeacr
   APP_NAME: share-free-messaging
   WEBAPP_NAME: sharefreemsg
@@ -27,16 +26,11 @@ jobs:
           run: |
             az configure --defaults location=${{ env.LOCATION }}
             az configure --defaults group=${{ env.RESOURCE_GROUP }}
-
-        - name: Get env Secrets
-          run: |
-            MONGO_DB_URL=$(az keyvault secret show --name "MONGO-DB-URL" --vault-name ${{ env.KEY_VAULT }} --query "value")
-            echo 'MONGO_DB_URL='$MONGO_DB_URL >> $GITHUB_ENV
         
         - name: Update .env
           run: |
             touch .env
-            echo 'MONGO_DB_URL='${{ env.MONGO_DB_URL }} >> .env
+            echo 'MONGO_DB_URL='${{ secrets.PROD_MONGODB_URL }} >> .env
         
         - name: Create service-account.json
           run: |
