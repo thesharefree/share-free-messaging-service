@@ -1,27 +1,27 @@
 on:
   push:
     branches:
-      - master
+      - production
 name: Build & Deploy to ACI
 env:
   LOCATION: centralindia
-  RESOURCE_GROUP: ShareFreeAlphaARG
-  KEY_VAULT: ShareFreeAlphaAKV
-  CONTAINER_REGISTERY: sharefreealphaacr
+  RESOURCE_GROUP: ShareFreeARG
+  KEY_VAULT: ShareFreeAKV
+  CONTAINER_REGISTERY: sharefreeacr
   APP_NAME: share-free-messaging
-  WEBAPP_NAME: sharefreemsgalpha
+  WEBAPP_NAME: sharefreemsg
 jobs:
     build-and-deploy:
         runs-on: ubuntu-latest
         steps:
 
         - name: Checkout GitHub Action
-          uses: actions/checkout@master
+          uses: actions/checkout@production
           
         - name: Login to Azure
           uses: azure/login@v1
           with:
-            creds: ${{ secrets.ALPHA_AZURE_CREDENTIALS }}
+            creds: ${{ secrets.PROD_AZURE_CREDENTIALS }}
 
         - name: Set default location
           run: |
@@ -47,8 +47,8 @@ jobs:
           uses: azure/docker-login@v1
           with:
             login-server: ${{ env.CONTAINER_REGISTERY }}.azurecr.io
-            username: ${{ secrets.ALPHA_AZURE_USERNAME }}
-            password: ${{ secrets.ALPHA_AZURE_PASSWORD }}
+            username: ${{ secrets.PROD_AZURE_USERNAME }}
+            password: ${{ secrets.PROD_AZURE_PASSWORD }}
         - run: |
             docker build . -t ${{ env.APP_NAME }}:1.0.${{ github.run_number }}
             docker tag ${{ env.APP_NAME }}:1.0.${{ github.run_number }} ${{ env.CONTAINER_REGISTERY }}.azurecr.io/builds/${{ env.APP_NAME }}:1.0.${{ github.run_number }}
