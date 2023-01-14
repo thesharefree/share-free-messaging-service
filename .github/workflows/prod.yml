@@ -2,7 +2,7 @@ on:
   push:
     branches:
       - production
-name: Build & Deploy to ACI
+name: Prod - Build & Deploy
 env:
   LOCATION: centralindia
   RESOURCE_GROUP: ShareFreeARG

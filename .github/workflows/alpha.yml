@@ -2,7 +2,7 @@ on:
   push:
     branches:
       - master
-name: Build & Deploy to ACI
+name: Alpha - Build & Deploy
 env:
   LOCATION: centralindia
   RESOURCE_GROUP: ShareFreeAlphaARG
