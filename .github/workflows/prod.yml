@@ -16,7 +16,7 @@ jobs:
         steps:
 
         - name: Checkout GitHub Action
-          uses: actions/checkout@production
+          uses: actions/checkout@master
           
         - name: Login to Azure
           uses: azure/login@v1
