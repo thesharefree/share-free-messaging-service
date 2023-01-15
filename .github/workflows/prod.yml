@@ -7,6 +7,7 @@ env:
   LOCATION: centralindia
   RESOURCE_GROUP: ShareFreeARG
   CONTAINER_REGISTERY: sharefreeacr
+  KEY_VAULT: ShareFreeAKV
   APP_NAME: share-free-messaging
   WEBAPP_NAME: sharefreemsg
 jobs:
@@ -27,10 +28,15 @@ jobs:
             az configure --defaults location=${{ env.LOCATION }}
             az configure --defaults group=${{ env.RESOURCE_GROUP }}
         
+        - name: Get env Secrets
+          run: |
+            MONGO_DB_URL=$(az keyvault secret show --name "MONGO-DB-URL" --vault-name ${{ env.KEY_VAULT }} --query "value")
+            echo 'MONGO_DB_URL='$MONGO_DB_URL >> $GITHUB_ENV
+        
         - name: Update .env
           run: |
             touch .env
-            printf 'MONGO_DB_URL=${{ secrets.PROD_MONGODB_URL }}' >> .env
+            echo 'MONGO_DB_URL='${{ env.MONGO_DB_URL }} >> .env
         
         - name: Create service-account.json
           run: |
