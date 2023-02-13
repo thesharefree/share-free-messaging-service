@@ -15,6 +15,9 @@ export class User extends Location {
   })
   name: string;
 
+  @Prop()
+  firebaseUserId: string;
+
   @Prop({
     required: [true, 'Email is required'],
     unique: true,
