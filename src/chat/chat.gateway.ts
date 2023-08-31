@@ -12,6 +12,7 @@ import { ChatService } from './chat.service';
 import { Bind } from '@nestjs/common';
 import { Message } from '../entities/message.entity';
 import { Server, Socket } from 'socket.io';
+import { Conference } from 'src/types/conference.type';
 
 @WebSocketGateway({
   cors: {
@@ -58,5 +59,22 @@ export class ChatGateway
       message,
     );
     await this.chatService.sendMessageToOfflineUsers(message);
+  }
+
+  @Bind(MessageBody(), ConnectedSocket())
+  @SubscribeMessage('conference')
+  async handleStartCall(
+    @MessageBody() data: Conference,
+    @ConnectedSocket() client: Socket,
+  ) {
+    console.log('call data', data);
+    const query = client.handshake.query;
+    data.senderEmail = query.userName.toString();
+    client.emit(`CONFERENCE-${data.groupId}`, data);
+    client.broadcast.emit(
+      `CONFERENCE-${data.groupId}`,
+      data,
+    );
+    await this.chatService.sendConferenceToOfflineUsers(data);
   }
 }

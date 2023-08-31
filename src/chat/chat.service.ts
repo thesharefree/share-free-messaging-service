@@ -14,6 +14,7 @@ import {
   UserGroupXrefDocument,
 } from 'src/entities/user-group-xref.entity';
 import { messaging } from 'firebase-admin';
+import { Conference } from 'src/types/conference.type';
 
 @Injectable()
 export class ChatService {
@@ -54,7 +55,6 @@ export class ChatService {
         updatedDate: new Date(),
       },
     );
-    console.log('User Online', userEmail);
   }
 
   async userDisconnected(userEmail: string) {
@@ -67,7 +67,6 @@ export class ChatService {
         updatedDate: new Date(),
       },
     );
-    console.log('User Offline', userEmail);
   }
 
   async sendMessageToOfflineUsers(message: Message) {
@@ -98,7 +97,6 @@ export class ChatService {
       });
       userIds.push(owner._id.toString());
       userIds = userIds.filter((userId) => userId != user._id.toString());
-      console.log(userIds);
       const users = await this.userModel.where('_id').in(userIds);
       const userTokens = users
         .filter((user) => user.online === false)
@@ -118,7 +116,52 @@ export class ChatService {
     try {
       await defaultApp.messaging().sendMulticast(messagePayload);
     } catch (ex) {
-      console.log(JSON.stringify(ex));
+      console.error('sendMessageToOfflineUsers', ex);
+    }
+  }
+
+  async sendConferenceToOfflineUsers(data: Conference) {
+    const user = await this.userModel.findOne({ email: data.senderEmail });
+    var messagePayload: messaging.MulticastMessage = {
+      data: {
+        type: 'CONFERENCE',
+        title: data.groupName + ' calling..',
+        message: data.groupName,
+        callInProgress: data.isStartCall.toString(),
+        groupId: data.groupId,
+        offer: JSON.stringify(data.offer),
+      },
+      tokens: [],
+    };
+    const group = await this.groupModel.findById(data.groupId);
+    await this.groupModel.updateOne(
+      { _id: data.groupId },
+      {
+        callInProgress: data.isStartCall,
+        callOffer: JSON.stringify(data.offer),
+      },
+    );
+    const owner = await this.userModel.findOne({ email: group.owner });
+    const xrefResp = await this.userGroupXrefModel.find({
+      groupId: group._id,
+    });
+    let userIds = xrefResp.map((xref) => {
+      return xref.userId;
+    });
+    userIds.push(owner._id.toString());
+    userIds = userIds.filter((userId) => userId != user._id.toString());
+    const users = await this.userModel.where('_id').in(userIds);
+    const userTokens = users
+      .filter((user) => user.online === false)
+      .map((user) => {
+        return user.registrationToken;
+      });
+    messagePayload.tokens = userTokens;
+    messagePayload.data.title = group.name;
+    try {
+      await defaultApp.messaging().sendMulticast(messagePayload);
+    } catch (ex) {
+      console.error('sendConferenceToOfflineUsers', ex);
     }
   }
 }

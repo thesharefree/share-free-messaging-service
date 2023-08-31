@@ -29,6 +29,15 @@ export class Group extends Location {
 
   @Prop()
   callInProgress: boolean;
+
+  @Prop()
+  callStarted: Date;
+  
+  @Prop()
+  ownerMessageLastRead: Date;
+
+  @Prop()
+  callOffer: string;
 }
 
 export type GroupDocument = Group & Document;
