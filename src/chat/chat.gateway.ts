@@ -71,28 +71,9 @@ export class ChatGateway
     const query = client.handshake.query;
     data.senderEmail = query.userName.toString();
     data.isStartCall = true;
-    client.emit(`CONFERENCE-${data.groupId}`, data);
+    client.emit(`CONFERENCE-${data.groupId}-start`, data);
     client.broadcast.emit(
-      `CONFERENCE-${data.groupId}`,
-      data,
-    );
-    await this.chatService.sendConferenceToOfflineUsers(data);
-  }
-
-  @Bind(MessageBody(), ConnectedSocket())
-  @SubscribeMessage('end_call')
-  async handleEndCall(
-    @MessageBody() data: Conference,
-    @ConnectedSocket() client: Socket,
-  ) {
-    console.log('end call data', data);
-    const query = client.handshake.query;
-    data.senderEmail = query.userName.toString();
-    data.isStartCall = false;
-    data.offer = null;
-    client.emit(`CONFERENCE-${data.groupId}`, data);
-    client.broadcast.emit(
-      `CONFERENCE-${data.groupId}`,
+      `CONFERENCE-${data.groupId}-start`,
       data,
     );
     await this.chatService.sendConferenceToOfflineUsers(data);
@@ -112,6 +93,41 @@ export class ChatGateway
       `CONFERENCE-${data.groupId}-answer`,
       data,
     );
+  }
+
+  @Bind(MessageBody(), ConnectedSocket())
+  @SubscribeMessage('leave_call')
+  async handleLeaveCall(
+    @MessageBody() data: Conference,
+    @ConnectedSocket() client: Socket,
+  ) {
+    console.log('leave call data', data);
+    const query = client.handshake.query;
+    data.senderEmail = query.userName.toString();
+    client.emit(`CONFERENCE-${data.groupId}-leave`, data);
+    client.broadcast.emit(
+      `CONFERENCE-${data.groupId}-leave`,
+      data,
+    );
+  }
+
+  @Bind(MessageBody(), ConnectedSocket())
+  @SubscribeMessage('end_call')
+  async handleEndCall(
+    @MessageBody() data: Conference,
+    @ConnectedSocket() client: Socket,
+  ) {
+    console.log('end call data', data);
+    const query = client.handshake.query;
+    data.senderEmail = query.userName.toString();
+    data.isStartCall = false;
+    data.offer = null;
+    client.emit(`CONFERENCE-${data.groupId}-end`, data);
+    client.broadcast.emit(
+      `CONFERENCE-${data.groupId}-end`,
+      data,
+    );
+    await this.chatService.sendConferenceToOfflineUsers(data);
   }
 
   @Bind(MessageBody(), ConnectedSocket())
