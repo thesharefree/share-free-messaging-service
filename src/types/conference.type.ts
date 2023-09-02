@@ -3,10 +3,18 @@ export interface Conference {
   groupId: string;
   groupName: string;
   isStartCall: boolean;
-  offer?: Offer;
+  offer?: RTCSessionDescription;
+  answer?: RTCSessionDescription;
+  iceCandidate?: IceCandidate;
 }
 
-interface Offer {
+interface RTCSessionDescription {
   sdp: string;
   type: string;
+}
+
+interface IceCandidate {
+  id: string;
+  label: string;
+  candidate: string;
 }

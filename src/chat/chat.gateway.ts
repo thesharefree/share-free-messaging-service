@@ -62,19 +62,71 @@ export class ChatGateway
   }
 
   @Bind(MessageBody(), ConnectedSocket())
-  @SubscribeMessage('conference')
+  @SubscribeMessage('start_call')
   async handleStartCall(
     @MessageBody() data: Conference,
     @ConnectedSocket() client: Socket,
   ) {
-    console.log('call data', data);
+    console.log('start call data', data);
     const query = client.handshake.query;
     data.senderEmail = query.userName.toString();
+    data.isStartCall = true;
     client.emit(`CONFERENCE-${data.groupId}`, data);
     client.broadcast.emit(
       `CONFERENCE-${data.groupId}`,
       data,
     );
     await this.chatService.sendConferenceToOfflineUsers(data);
+  }
+
+  @Bind(MessageBody(), ConnectedSocket())
+  @SubscribeMessage('end_call')
+  async handleEndCall(
+    @MessageBody() data: Conference,
+    @ConnectedSocket() client: Socket,
+  ) {
+    console.log('end call data', data);
+    const query = client.handshake.query;
+    data.senderEmail = query.userName.toString();
+    data.isStartCall = false;
+    data.offer = null;
+    client.emit(`CONFERENCE-${data.groupId}`, data);
+    client.broadcast.emit(
+      `CONFERENCE-${data.groupId}`,
+      data,
+    );
+    await this.chatService.sendConferenceToOfflineUsers(data);
+  }
+
+  @Bind(MessageBody(), ConnectedSocket())
+  @SubscribeMessage('answer_call')
+  async handleAnswerCall(
+    @MessageBody() data: Conference,
+    @ConnectedSocket() client: Socket,
+  ) {
+    console.log('answer call data', data);
+    const query = client.handshake.query;
+    data.senderEmail = query.userName.toString();
+    client.emit(`CONFERENCE-${data.groupId}-answer`, data);
+    client.broadcast.emit(
+      `CONFERENCE-${data.groupId}-answer`,
+      data,
+    );
+  }
+
+  @Bind(MessageBody(), ConnectedSocket())
+  @SubscribeMessage('ice_candidate')
+  async handleIceCandidate(
+    @MessageBody() data: Conference,
+    @ConnectedSocket() client: Socket,
+  ) {
+    console.log('call data', data);
+    const query = client.handshake.query;
+    data.senderEmail = query.userName.toString();
+    client.emit(`CONFERENCE-${data.groupId}-ice_candidate`, data);
+    client.broadcast.emit(
+      `CONFERENCE-${data.groupId}-ice_candidate`,
+      data,
+    );
   }
 }
